@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Smart Classroom - Attendance</title>
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+    --bg:#07111f;
+    --panel:#0d1b2e;
+    --panel2:#111f33;
+    --border:#24364d;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --blue:#3b82f6;
+    --green:#10b981;
+    --red:#ef4444;
+    --yellow:#f59e0b;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    background:
+        radial-gradient(circle at top left,#12345a 0,transparent 35%),
+        radial-gradient(circle at bottom right,#063d35 0,transparent 30%),
+        var(--bg);
+    color:var(--text);
+    font-family:Inter,Arial,sans-serif;
+    padding:25px;
+}
+
+.container{
+    width:1100px;
+    max-width:100%;
+    margin:auto;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:22px;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.logo{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,#2563eb,#10b981);
+    font-size:25px;
+}
+
+.brand h1{
+    margin:0;
+    font-size:22px;
+}
+
+.brand p{
+    margin:3px 0 0;
+    color:var(--muted);
+    font-size:13px;
+}
+
+.status-pill{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 13px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:rgba(13,27,46,.8);
+    color:var(--muted);
+    font-size:13px;
+}
+
+.dot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:#64748b;
+}
+
+.dot.online{
+    background:#10b981;
+    box-shadow:0 0 12px #10b981;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1.5fr .8fr;
+    gap:22px;
+}
+
+.card{
+    background:rgba(13,27,46,.88);
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:22px;
+    box-shadow:0 25px 70px rgba(0,0,0,.25);
+    backdrop-filter:blur(15px);
+}
+
+.camera-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.camera-title h2{
+    margin:0;
+    font-size:18px;
+}
+
+.camera-title span{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.camera-box{
+    position:relative;
+    overflow:hidden;
+    border-radius:18px;
+    background:#000;
+    border:1px solid #334155;
+    aspect-ratio:4/3;
+}
+
+video{
+    width:100%;
+    height:100%;
+    display:block;
+    object-fit:cover;
+}
+
+.scan-frame{
+    position:absolute;
+    inset:12%;
+    border:2px solid rgba(59,130,246,.85);
+    border-radius:20px;
+    pointer-events:none;
+}
+
+.scan-line{
+    position:absolute;
+    left:12%;
+    right:12%;
+    top:15%;
+    height:2px;
+    background:#10b981;
+    box-shadow:0 0 14px #10b981;
+    opacity:0;
+}
+
+.scanning .scan-line{
+    opacity:1;
+    animation:scan 2s linear infinite;
+}
+
+@keyframes scan{
+    0%{top:15%}
+    50%{top:82%}
+    100%{top:15%}
+}
+
+.face-hint{
+    position:absolute;
+    bottom:15px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:8px 13px;
+    border-radius:999px;
+    background:rgba(0,0,0,.65);
+    color:#e2e8f0;
+    font-size:12px;
+    white-space:nowrap;
+}
+
+.controls{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:15px;
+}
+
+button,select{
+    width:100%;
+    padding:13px 15px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    font-size:14px;
+    font-weight:700;
+    outline:none;
+}
+
+button{
+    cursor:pointer;
+    color:white;
+    transition:.2s;
+}
+
+button:hover{
+    transform:translateY(-1px);
+}
+
+button:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+    transform:none;
+}
+
+#start{
+    background:#2563eb;
+}
+
+#stop{
+    background:#334155;
+}
+
+#recognize{
+    grid-column:1/-1;
+    background:linear-gradient(135deg,#059669,#10b981);
+    font-size:15px;
+}
+
+select{
+    background:#0a1627;
+    color:white;
+    margin-bottom:10px;
+}
+
+.label{
+    display:block;
+    margin-bottom:8px;
+    color:#cbd5e1;
+    font-size:13px;
+    font-weight:600;
+}
+
+.result{
+    min-height:160px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:25px;
+    border-radius:18px;
+    background:#091525;
+    border:1px solid var(--border);
+}
+
+.result-icon{
+    width:65px;
+    height:65px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    font-size:30px;
+    margin-bottom:14px;
+    background:#17263b;
+}
+
+.result h3{
+    margin:0 0 7px;
+}
+
+.result p{
+    margin:0;
+    color:var(--muted);
+    line-height:1.5;
+    font-size:14px;
+}
+
+.success{
+    border-color:rgba(16,185,129,.5);
+}
+
+.success .result-icon{
+    background:rgba(16,185,129,.15);
+}
+
+.error{
+    border-color:rgba(239,68,68,.5);
+}
+
+.error .result-icon{
+    background:rgba(239,68,68,.15);
+}
+
+.warning{
+    border-color:rgba(245,158,11,.5);
+}
+
+.warning .result-icon{
+    background:rgba(245,158,11,.15);
+}
+
+.info-list{
+    margin-top:18px;
+    display:grid;
+    gap:9px;
+}
+
+.info{
+    display:flex;
+    justify-content:space-between;
+    padding:11px 12px;
+    border-radius:10px;
+    background:#0a1729;
+    font-size:13px;
+}
+
+.info span:first-child{
+    color:var(--muted);
+}
+
+#msg{
+    margin-top:15px;
+    text-align:center;
+    padding:11px;
+    border-radius:10px;
+    color:var(--muted);
+    font-size:13px;
+}
+
+canvas{
+    display:none;
+}
+
+@media(max-width:800px){
+    body{padding:15px}
+    .grid{grid-template-columns:1fr}
+    .topbar{align-items:flex-start;gap:10px}
+    .status-pill{display:none}
+}
+
+@media(max-width:480px){
+    .card{padding:15px;border-radius:17px}
+    .controls{grid-template-columns:1fr}
+    #recognize{grid-column:auto}
+    .brand h1{font-size:18px}
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="topbar">
+    <div class="brand">
+        <div class="logo">🤖</div>
+        <div>
+            <h1>AI Smart Classroom</h1>
+            <p>Face Recognition Attendance System</p>
+        </div>
+    </div>
+
+```
+<div class="status-pill">
+    <span class="dot" id="statusDot"></span>
+    <span id="cameraStatus">Camera Offline</span>
+</div>
+```
+
+</div>
+
+<div class="grid">
+
+<!-- CAMERA -->
+
+<div class="card">
+
+```
+<div class="camera-title">
+    <h2>📷 Face Scanner</h2>
+    <span>AI Recognition</span>
+</div>
+
+<div class="camera-box" id="cameraBox">
+    <video id="video" autoplay playsinline></video>
+
+    <div class="scan-frame"></div>
+    <div class="scan-line"></div>
+
+    <div class="face-hint">
+        Keep your face inside the frame
+    </div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<div style="margin-top:17px">
+    <label class="label">Select Subject</label>
+
+    <select id="subject">
+        <option value="General">General</option>
+    </select>
+</div>
+
+<div class="controls">
+    <button id="start">📷 Start Camera</button>
+    <button id="stop" disabled>⏹ Stop Camera</button>
+    <button id="recognize" disabled>
+        🔎 Recognize & Mark Attendance
+    </button>
+</div>
+
+<div id="msg">
+    Start the camera to begin.
+</div>
+```
+
+</div>
+
+<!-- RESULT -->
+
+<div class="card">
+
+```
+<div class="camera-title">
+    <h2>📊 Recognition Result</h2>
+    <span>Live</span>
+</div>
+
+<div class="result" id="result">
+
+    <div class="result-icon">👤</div>
+
+    <h3>Ready to Scan</h3>
+
+    <p>
+        Start camera and place the student's face
+        inside the scanning frame.
+    </p>
+
+</div>
+
+<div class="info-list">
+
+    <div class="info">
+        <span>Recognition</span>
+        <strong id="recognitionState">Waiting</strong>
+    </div>
+
+    <div class="info">
+        <span>Attendance</span>
+        <strong id="attendanceState">Waiting</strong>
+    </div>
+
+    <div class="info">
+        <span>Subject</span>
+        <strong id="subjectState">General</strong>
+    </div>
+
+</div>
+```
+
+</div>
+
+</div>
+</div>
+
+<script>
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+
+const start = document.getElementById("start");
+const stop = document.getElementById("stop");
+const recognize = document.getElementById("recognize");
+
+const subject = document.getElementById("subject");
+
+const msg = document.getElementById("msg");
+const cameraBox = document.getElementById("cameraBox");
+
+const result = document.getElementById("result");
+
+const statusDot = document.getElementById("statusDot");
+const cameraStatus = document.getElementById("cameraStatus");
+
+const recognitionState =
+    document.getElementById("recognitionState");
+
+const attendanceState =
+    document.getElementById("attendanceState");
+
+const subjectState =
+    document.getElementById("subjectState");
+
+let stream = null;
+
+
+// ===============================
+// SUBJECTS
+// ===============================
+
+async function loadSubjects(){
+
+    try{
+
+        const response = await fetch("/api/subjects");
+
+        const data = await response.json();
+
+        if(data.success && Array.isArray(data.subjects)){
+
+            subject.innerHTML =
+                '<option value="General">General</option>';
+
+            data.subjects.forEach(item => {
+
+                const name =
+                    item.name || item.subject;
+
+                if(!name) return;
+
+                if(
+                    [...subject.options]
+                    .some(option => option.value === name)
+                ) return;
+
+                const option =
+                    document.createElement("option");
+
+                option.value = name;
+                option.textContent = name;
+
+                subject.appendChild(option);
+            });
+        }
+
+    }catch(error){
+
+        console.log("Subject loading failed:",error);
+
+    }
+
+}
+
+subject.onchange = () => {
+
+    subjectState.textContent = subject.value;
+
+};
+
+
+// ===============================
+// CAMERA
+// ===============================
+
+start.onclick = async () => {
+
+    try{
+
+        stream =
+            await navigator.mediaDevices.getUserMedia({
+
+                video:{
+                    width:{ideal:640},
+                    height:{ideal:480},
+                    facingMode:"user"
+                },
+
+                audio:false
+
+            });
+
+        video.srcObject = stream;
+
+        start.disabled = true;
+        stop.disabled = false;
+        recognize.disabled = false;
+
+        statusDot.classList.add("online");
+
+        cameraStatus.textContent = "Camera Online";
+
+        msg.textContent =
+            "Camera ready. Position the face inside the frame.";
+
+        recognitionState.textContent = "Ready";
+
+        result.className = "result";
+
+        result.innerHTML = `
+            <div class="result-icon">👤</div>
+            <h3>Ready to Scan</h3>
+            <p>Face detected by camera. Click recognize.</p>
+        `;
+
+    }catch(error){
+
+        console.error(error);
+
+        msg.textContent =
+            "❌ Camera permission allow karo.";
+
+        result.className = "result error";
+
+        result.innerHTML = `
+            <div class="result-icon">❌</div>
+            <h3>Camera Error</h3>
+            <p>Camera permission denied or unavailable.</p>
+        `;
+
+    }
+
+};
+
+
+// ===============================
+// STOP CAMERA
+// ===============================
+
+function stopCamera(){
+
+    if(stream){
+
+        stream.getTracks().forEach(track => track.stop());
+
+        stream = null;
+
+    }
+
+    video.srcObject = null;
+
+    start.disabled = false;
+    stop.disabled = true;
+    recognize.disabled = true;
+
+    cameraBox.classList.remove("scanning");
+
+    statusDot.classList.remove("online");
+
+    cameraStatus.textContent = "Camera Offline";
+
+}
+
+stop.onclick = stopCamera;
+
+
+// ===============================
+// RECOGNIZE
+// ===============================
+
+recognize.onclick = async () => {
+
+    if(!stream){
+
+        msg.textContent =
+            "Pehle camera start karo.";
+
+        return;
+
+    }
+
+    if(!video.videoWidth){
+
+        msg.textContent =
+            "Camera image ready nahi hai.";
+
+        return;
+
+    }
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const context = canvas.getContext("2d");
+
+    context.drawImage(
+        video,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    const image =
+        canvas.toDataURL("image/jpeg",0.9);
+
+    const fd = new FormData();
+
+    fd.append("image_data",image);
+    fd.append("subject",subject.value);
+
+    recognize.disabled = true;
+
+    cameraBox.classList.add("scanning");
+
+    msg.textContent =
+        "🔎 AI face matching...";
+
+    recognitionState.textContent =
+        "Scanning";
+
+    attendanceState.textContent =
+        "Processing";
+
+    result.className = "result";
+
+    result.innerHTML = `
+        <div class="result-icon">🔎</div>
+        <h3>Analyzing Face</h3>
+        <p>AI is matching the face with registered students...</p>
+    `;
+
+    try{
+
+        const response =
+            await fetch("/recognize",{
+
+                method:"POST",
+                body:fd
+
+            });
+
+        const data =
+            await response.json();
+
+        cameraBox.classList.remove("scanning");
+
+        if(data.recognized){
+
+            const s =
+                data.student || {};
+
+            const a =
+                data.attendance || {};
+
+            recognitionState.textContent =
+                "Recognized";
+
+            if(a.already_marked){
+
+                attendanceState.textContent =
+                    "Already Marked";
+
+                result.className =
+                    "result warning";
+
+                result.innerHTML = `
+                    <div class="result-icon">⚠️</div>
+                    <h3>${escapeHtml(s.name || "Student")}</h3>
+                    <p>Attendance is already marked today.</p>
+                `;
+
+                msg.textContent =
+                    "⚠️ Attendance already marked.";
+
+            }
+
+            else if(a.success){
+
+                attendanceState.textContent =
+                    "Present";
+
+                result.className =
+                    "result success";
+
+                result.innerHTML = `
+                    <div class="result-icon">✅</div>
+                    <h3>${escapeHtml(s.name || "Student")}</h3>
+                    <p>Attendance marked successfully.</p>
+                `;
+
+                msg.textContent =
+                    "✅ Attendance marked successfully.";
+
+            }
+
+            else{
+
+                attendanceState.textContent =
+                    "Save Failed";
+
+                result.className =
+                    "result error";
+
+                result.innerHTML = `
+                    <div class="result-icon">⚠️</div>
+                    <h3>${escapeHtml(s.name || "Student")}</h3>
+                    <p>Face recognized, but attendance could not be saved.</p>
+                `;
+
+                msg.textContent =
+                    "⚠️ Attendance save failed.";
+
+            }
+
+        }
+
+        else{
+
+            recognitionState.textContent =
+                "Not Recognized";
+
+            attendanceState.textContent =
+                "Not Marked";
+
+            result.className =
+                "result error";
+
+            result.innerHTML = `
+                <div class="result-icon">❌</div>
+                <h3>Face Not Recognized</h3>
+                <p>${escapeHtml(
+                    data.message ||
+                    "No matching registered student found."
+                )}</p>
+            `;
+
+            msg.textContent =
+                "❌ Face not recognized.";
+
+        }
+
+    }catch(error){
+
+        console.error(error);
+
+        cameraBox.classList.remove("scanning");
+
+        recognitionState.textContent =
+            "Server Error";
+
+        attendanceState.textContent =
+            "Not Marked";
+
+        result.className =
+            "result error";
+
+        result.innerHTML = `
+            <div class="result-icon">⚠️</div>
+            <h3>Connection Error</h3>
+            <p>Server se connection nahi ho raha.</p>
+        `;
+
+        msg.textContent =
+            "❌ Server connection failed.";
+
+    }
+
+    finally{
+
+        recognize.disabled = !stream;
+
+    }
+
+};
+
+
+// ===============================
+// SECURITY: HTML ESCAPE
+// ===============================
+
+function escapeHtml(value){
+
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+
+// ===============================
+// CLEANUP
+// ===============================
+
+window.addEventListener("beforeunload",stopCamera);
+
+loadSubjects();
+
+</script>
+
+</body>
+</html>

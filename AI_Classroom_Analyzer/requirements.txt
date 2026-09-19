@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+supabase
+python-multipart
+opencv-contrib-python
+numpy
+reportlab

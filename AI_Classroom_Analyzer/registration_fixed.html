@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Smart Classroom - Student Registration</title>
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+    --bg:#07111f;
+    --panel:#0d1b2e;
+    --panel2:#111f33;
+    --border:#24364d;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --blue:#3b82f6;
+    --green:#10b981;
+    --purple:#8b5cf6;
+    --red:#ef4444;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    background:
+        radial-gradient(circle at top left,#12345a 0,transparent 35%),
+        radial-gradient(circle at bottom right,#2e1457 0,transparent 30%),
+        var(--bg);
+    color:white;
+    font-family:Inter,Arial,sans-serif;
+    padding:25px;
+}
+
+.container{
+    width:1050px;
+    max-width:100%;
+    margin:auto;
+}
+
+.topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:22px;
+}
+
+.brand{
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+
+.logo{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,#2563eb,#8b5cf6);
+    font-size:25px;
+}
+
+.brand h1{
+    margin:0;
+    font-size:22px;
+}
+
+.brand p{
+    margin:3px 0 0;
+    color:var(--muted);
+    font-size:13px;
+}
+
+.badge{
+    padding:9px 13px;
+    border-radius:999px;
+    background:#101f34;
+    border:1px solid var(--border);
+    color:#cbd5e1;
+    font-size:13px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:.85fr 1.15fr;
+    gap:22px;
+}
+
+.card{
+    background:rgba(13,27,46,.9);
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:23px;
+    box-shadow:0 25px 70px rgba(0,0,0,.25);
+    backdrop-filter:blur(15px);
+}
+
+.card-title{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:20px;
+}
+
+.card-icon{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:#17263b;
+    font-size:20px;
+}
+
+.card-title h2{
+    margin:0;
+    font-size:18px;
+}
+
+.card-title p{
+    margin:3px 0 0;
+    color:var(--muted);
+    font-size:12px;
+}
+
+.field{
+    margin-bottom:15px;
+}
+
+label{
+    display:block;
+    margin-bottom:7px;
+    color:#cbd5e1;
+    font-size:13px;
+    font-weight:600;
+}
+
+input{
+    width:100%;
+    padding:13px 14px;
+    border:1px solid var(--border);
+    border-radius:11px;
+    background:#091525;
+    color:white;
+    outline:none;
+    font-size:14px;
+    transition:.2s;
+}
+
+input:focus{
+    border-color:#3b82f6;
+    box-shadow:0 0 0 3px rgba(59,130,246,.1);
+}
+
+.camera-box{
+    position:relative;
+    overflow:hidden;
+    background:#000;
+    border:1px solid #334155;
+    border-radius:18px;
+    aspect-ratio:4/3;
+}
+
+video{
+    width:100%;
+    height:100%;
+    display:block;
+    object-fit:cover;
+}
+
+.scan-frame{
+    position:absolute;
+    inset:12%;
+    border:2px solid rgba(139,92,246,.9);
+    border-radius:20px;
+    pointer-events:none;
+}
+
+.captured-preview{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:none;
+}
+
+.camera-label{
+    position:absolute;
+    top:12px;
+    left:12px;
+    padding:7px 10px;
+    border-radius:8px;
+    background:rgba(0,0,0,.6);
+    font-size:11px;
+}
+
+.camera-hint{
+    position:absolute;
+    bottom:13px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:7px 11px;
+    border-radius:999px;
+    background:rgba(0,0,0,.65);
+    white-space:nowrap;
+    font-size:11px;
+    color:#e2e8f0;
+}
+
+.camera-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:13px;
+}
+
+button{
+    width:100%;
+    padding:13px;
+    border:0;
+    border-radius:11px;
+    color:white;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover{
+    transform:translateY(-1px);
+}
+
+button:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+    transform:none;
+}
+
+#startCamera{
+    background:#2563eb;
+}
+
+#capture{
+    background:#059669;
+}
+
+#retake{
+    background:#475569;
+    display:none;
+}
+
+#register{
+    margin-top:17px;
+    background:linear-gradient(135deg,#7c3aed,#8b5cf6);
+    font-size:15px;
+}
+
+.status{
+    margin-top:14px;
+    padding:11px;
+    border-radius:10px;
+    text-align:center;
+    background:#091525;
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:13px;
+}
+
+.success{
+    color:#6ee7b7;
+    background:rgba(16,185,129,.1);
+    border-color:rgba(16,185,129,.35);
+}
+
+.error{
+    color:#fca5a5;
+    background:rgba(239,68,68,.1);
+    border-color:rgba(239,68,68,.35);
+}
+
+.steps{
+    display:grid;
+    gap:10px;
+    margin-top:20px;
+}
+
+.step{
+    display:flex;
+    gap:11px;
+    align-items:center;
+    padding:12px;
+    border-radius:11px;
+    background:#091525;
+    border:1px solid var(--border);
+}
+
+.step-number{
+    width:29px;
+    height:29px;
+    flex:none;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:#17263b;
+    color:#cbd5e1;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.step strong{
+    font-size:13px;
+}
+
+.step small{
+    display:block;
+    margin-top:3px;
+    color:var(--muted);
+}
+
+canvas{
+    display:none;
+}
+
+@media(max-width:800px){
+    body{padding:15px}
+    .grid{grid-template-columns:1fr}
+    .badge{display:none}
+}
+
+@media(max-width:480px){
+    .card{padding:15px;border-radius:17px}
+    .camera-actions{grid-template-columns:1fr}
+    .brand h1{font-size:18px}
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="topbar">
+
+```
+<div class="brand">
+
+    <div class="logo">🧑‍🎓</div>
+
+    <div>
+        <h1>AI Smart Classroom</h1>
+        <p>Student Registration & Face Enrollment</p>
+    </div>
+
+</div>
+
+<div class="badge">
+    🔐 Teacher Panel
+</div>
+```
+
+</div>
+
+<div class="grid">
+
+<!-- STUDENT DETAILS -->
+
+<div class="card">
+
+```
+<div class="card-title">
+
+    <div class="card-icon">📝</div>
+
+    <div>
+        <h2>Student Details</h2>
+        <p>Enter student information</p>
+    </div>
+
+</div>
+
+<form id="registrationForm">
+
+    <div class="field">
+        <label>Student Name</label>
+        <input
+            type="text"
+            name="name"
+            placeholder="Enter full name"
+            autocomplete="name"
+            required
+        >
+    </div>
+
+    <div class="field">
+        <label>Roll Number</label>
+        <input
+            type="text"
+            name="roll_no"
+            placeholder="Enter roll number"
+            autocomplete="off"
+            required
+        >
+    </div>
+
+    <div class="field">
+        <label>Class / Section</label>
+        <input
+            type="text"
+            name="class_name"
+            placeholder="Example: BCA 2nd Year A"
+            required
+        >
+    </div>
+
+</form>
+
+
+<div class="steps">
+
+    <div class="step">
+
+        <div class="step-number">1</div>
+
+        <div>
+            <strong>Enter Student Details</strong>
+            <small>Name, roll number and class</small>
+        </div>
+
+    </div>
+
+    <div class="step">
+
+        <div class="step-number">2</div>
+
+        <div>
+            <strong>Capture Face</strong>
+            <small>Keep face clearly visible</small>
+        </div>
+
+    </div>
+
+    <div class="step">
+
+        <div class="step-number">3</div>
+
+        <div>
+            <strong>Register Student</strong>
+            <small>Save student and face data</small>
+        </div>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+<!-- CAMERA -->
+
+<div class="card">
+
+```
+<div class="card-title">
+
+    <div class="card-icon">📷</div>
+
+    <div>
+        <h2>Face Enrollment</h2>
+        <p>Capture a clear face image</p>
+    </div>
+
+</div>
+
+<div class="camera-box">
+
+    <video
+        id="video"
+        autoplay
+        playsinline
+    ></video>
+
+    <img
+        id="preview"
+        class="captured-preview"
+        alt="Captured face"
+    >
+
+    <div class="scan-frame"></div>
+
+    <div class="camera-label">
+        AI CAMERA
+    </div>
+
+    <div class="camera-hint">
+        Position face inside the frame
+    </div>
+
+</div>
+
+<canvas id="canvas"></canvas>
+
+<div class="camera-actions">
+
+    <button
+        type="button"
+        id="startCamera"
+    >
+        📷 Start Camera
+    </button>
+
+    <button
+        type="button"
+        id="capture"
+        disabled
+    >
+        📸 Capture Face
+    </button>
+
+    <button
+        type="button"
+        id="retake"
+    >
+        🔄 Retake
+    </button>
+
+</div>
+
+<button
+    type="submit"
+    id="register"
+    form="registrationForm"
+>
+    🚀 Register Student
+</button>
+
+<div
+    id="message"
+    class="status"
+>
+    Start camera and capture student's face.
+</div>
+```
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+const form =
+    document.getElementById("registrationForm");
+
+const video =
+    document.getElementById("video");
+
+const canvas =
+    document.getElementById("canvas");
+
+const preview =
+    document.getElementById("preview");
+
+const startCamera =
+    document.getElementById("startCamera");
+
+const capture =
+    document.getElementById("capture");
+
+const retake =
+    document.getElementById("retake");
+
+const register =
+    document.getElementById("register");
+
+const message =
+    document.getElementById("message");
+
+let stream = null;
+let capturedImage = null;
+
+
+// ===============================
+// STATUS
+// ===============================
+
+function show(text,type=""){
+
+    message.textContent = text;
+
+    message.className =
+        "status " + type;
+
+}
+
+
+// ===============================
+// START CAMERA
+// ===============================
+
+startCamera.onclick = async () => {
+
+    try{
+
+        stream =
+            await navigator.mediaDevices.getUserMedia({
+
+                video:{
+                    width:{ideal:640},
+                    height:{ideal:480},
+                    facingMode:"user"
+                },
+
+                audio:false
+
+            });
+
+        video.srcObject = stream;
+
+        startCamera.disabled = true;
+
+        capture.disabled = false;
+
+        show(
+            "Camera ready. Face ko frame ke andar rakho.",
+            "success"
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+        show(
+            "❌ Camera permission allow karo.",
+            "error"
+        );
+
+    }
+
+};
+
+
+// ===============================
+// CAPTURE
+// ===============================
+
+capture.onclick = () => {
+
+    if(!stream){
+
+        show(
+            "Pehle camera start karo.",
+            "error"
+        );
+
+        return;
+
+    }
+
+    if(!video.videoWidth){
+
+        show(
+            "Camera image ready nahi hai.",
+            "error"
+        );
+
+        return;
+
+    }
+
+    canvas.width =
+        video.videoWidth;
+
+    canvas.height =
+        video.videoHeight;
+
+    const context =
+        canvas.getContext("2d");
+
+    context.drawImage(
+        video,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    capturedImage =
+        canvas.toDataURL(
+            "image/jpeg",
+            .92
+        );
+
+    preview.src =
+        capturedImage;
+
+    preview.style.display =
+        "block";
+
+    video.style.display =
+        "none";
+
+    capture.style.display =
+        "none";
+
+    retake.style.display =
+        "block";
+
+    show(
+        "✅ Face captured. Ab Register Student dabao.",
+        "success"
+    );
+
+};
+
+
+// ===============================
+// RETAKE
+// ===============================
+
+retake.onclick = () => {
+
+    capturedImage = null;
+
+    preview.src = "";
+
+    preview.style.display =
+        "none";
+
+    video.style.display =
+        "block";
+
+    capture.style.display =
+        "block";
+
+    retake.style.display =
+        "none";
+
+    show(
+        "Camera ready. Face capture karo."
+    );
+
+};
+
+
+// ===============================
+// REGISTER
+// ===============================
+
+form.onsubmit = async (e) => {
+
+    e.preventDefault();
+
+    if(!capturedImage){
+
+        show(
+            "Pehle face capture karo.",
+            "error"
+        );
+
+        return;
+
+    }
+
+    const name =
+        form.elements["name"].value.trim();
+
+    const roll =
+        form.elements["roll_no"].value.trim();
+
+    const className =
+        form.elements["class_name"].value.trim();
+
+    if(!name || !roll || !className){
+
+        show(
+            "Student details complete karo.",
+            "error"
+        );
+
+        return;
+
+    }
+
+    register.disabled = true;
+
+    show(
+        "⏳ Student + face save ho raha hai..."
+    );
+
+    try{
+
+        const fd =
+            new FormData(form);
+
+        fd.append(
+            "face_image",
+            capturedImage
+        );
+
+        const response =
+            await fetch(
+                "/register",
+                {
+                    method:"POST",
+                    body:fd
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if(data.success){
+
+            show(
+                "✅ " +
+                (data.message ||
+                "Student registered successfully."),
+                "success"
+            );
+
+            form.reset();
+
+            capturedImage = null;
+
+            preview.src = "";
+
+            preview.style.display =
+                "none";
+
+            video.style.display =
+                "block";
+
+            capture.style.display =
+                "block";
+
+            retake.style.display =
+                "none";
+
+        }else{
+
+            show(
+                "❌ " +
+                (data.message ||
+                "Registration failed."),
+                "error"
+            );
+
+        }
+
+    }catch(error){
+
+        console.error(error);
+
+        show(
+            "❌ Server se connection nahi ho raha.",
+            "error"
+        );
+
+    }
+
+    finally{
+
+        register.disabled = false;
+
+    }
+
+};
+
+
+// ===============================
+// STOP CAMERA
+// ===============================
+
+function stopCamera(){
+
+    if(stream){
+
+        stream
+            .getTracks()
+            .forEach(
+                track => track.stop()
+            );
+
+        stream = null;
+
+    }
+
+    video.srcObject = null;
+
+}
+
+window.addEventListener(
+    "beforeunload",
+    stopCamera
+);
+
+</script>
+
+</body>
+</html>
